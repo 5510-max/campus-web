@@ -1,274 +1,624 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
-
-const menus = [
-  { name: "二手交易",  color: "from-orange-400 to-yellow-300",  icon: "🛍️" },
-  { name: "表白墙",    color: "from-pink-400 to-rose-300",      icon: "💗" },
-  { name: "失物招领",  color: "from-blue-400 to-cyan-300",      icon: "🔑" },
-  { name: "扩列交友",  color: "from-violet-400 to-purple-300",  icon: "👥" },
-  { name: "吃饭搭子",  color: "from-amber-400 to-orange-300",   icon: "🍜" },
-  { name: "租房信息",  color: "from-green-400 to-emerald-300",  icon: "🏠" },
-  { name: "兼职信息",  color: "from-sky-400 to-blue-300",       icon: "💼" },
-  { name: "校内勤工",  color: "from-orange-400 to-red-300",     icon: "🎓" },
-  { name: "学习运动",  color: "from-blue-400 to-indigo-300",    icon: "⚽" },
-  { name: "资料下载",  color: "from-purple-400 to-fuchsia-300", icon: "📄" },
-  { name: "代取快递",  color: "from-yellow-400 to-amber-300",   icon: "📦" },
-  { name: "打印跑腿",  color: "from-cyan-400 to-sky-300",       icon: "🖨️" },
-  { name: "代买外卖",  color: "from-teal-400 to-green-300",     icon: "🛵" },
-  { name: "宿舍用品",  color: "from-emerald-400 to-lime-300",   icon: "🛏️" },
-  { name: "课本教材",  color: "from-violet-400 to-purple-300",  icon: "📚" },
-  { name: "论坛广场",  color: "from-pink-400 to-purple-300",    icon: "💬" },
+// 核心功能
+const mainFeatures = [
+  { id: "confess", name: "表白墙", icon: "💕", desc: "匿名表白，传递心意", color: "#FF6B8A" },
+  { id: "friends", name: "扩列交友", icon: "👋", desc: "认识新朋友，找搭子", color: "#5B8DEF" },
+  { id: "study", name: "学习搭子", icon: "📚", desc: "一起学习，互相监督", color: "#4CAF50" },
 ];
 
-const hotCards = [
-  { title:"表白墙",   subtitle:"今日 520 条新表白", text:"想把你写进诗里，从此全世界都是你。",       button:"去表白",  bg:"bg-pink-50",  color:"text-pink-500"  },
-  { title:"失物招领", subtitle:"今日 12 条新消息",  text:"有人在图书馆捡到一串钥匙。",               button:"去看看",  bg:"bg-blue-50",  color:"text-blue-500"  },
-  { title:"兼职信息", subtitle:"更新 28 条兼职",    text:"奶茶店兼职 18-22 元/小时。",              button:"立即报名",bg:"bg-green-50", color:"text-green-500" },
-];
-
-const hotPosts = [
-  { id:1, tag:"表白墙",  avatar:"🐼", user:"匿名熊猫", time:"3分钟前",  content:"图书馆三楼靠窗的女生，你每天都在看法语书，想认识你 🌸", likes:234, comments:56 },
-  { id:2, tag:"二手交易",avatar:"🦊", user:"卖书小狐", time:"15分钟前", content:"高数同济版上下册，九成新，50元包邮 📖",                   likes:89,  comments:23 },
-  { id:3, tag:"找搭子",  avatar:"🐨", user:"孤独考拉", time:"32分钟前", content:"有没有早上7点一起跑步的？操场打卡21天 💪",                 likes:167, comments:41 },
-];
-
+// 用户建议列表
 const initSuggestions = [
-  { id:1, title:"希望增加「二手拍卖」功能",      desc:"设置倒计时竞拍，价高者得，更公平有趣",     votes:312, category:"功能建议", status:"采纳中", userVoted:false },
-  { id:2, title:"表白墙支持语音/视频表白",        desc:"文字太单调了，来点声音和画面更有仪式感",   votes:267, category:"功能建议", status:"评估中", userVoted:false },
-  { id:3, title:"增加「组队刷题」房间功能",        desc:"大家一起在线自习打卡，互相监督效率更高",   votes:198, category:"学习",   status:"评估中", userVoted:false },
-  { id:4, title:"跑腿接单加入实时位置共享",        desc:"下单后可以看到跑腿小哥的位置，更安心",     votes:145, category:"跑腿",   status:"规划中", userVoted:false },
-  { id:5, title:"失物招领加 AI 智能匹配",         desc:"上传图片自动识别物品，推送给可能失主",     votes:128, category:"技术",   status:"规划中", userVoted:false },
+  { id: 1, title: "增加「二手交易」功能", votes: 328, voted: false },
+  { id: 2, title: "增加「失物招领」功能", votes: 256, voted: false },
+  { id: 3, title: "增加「兼职信息」功能", votes: 198, voted: false },
+  { id: 4, title: "增加「代取快递」功能", votes: 145, voted: false },
+  { id: 5, title: "增加「租房信息」功能", votes: 89, voted: false },
 ];
 
-const statusColor = { "采纳中":"text-emerald-600 bg-emerald-50", "评估中":"text-amber-600 bg-amber-50", "规划中":"text-blue-600 bg-blue-50" };
-const categoryColor = { "功能建议":"text-violet-600 bg-violet-50", "学习":"text-sky-600 bg-sky-50", "跑腿":"text-orange-600 bg-orange-50", "技术":"text-pink-600 bg-pink-50" };
+// 表白墙数据
+const confessPosts = [
+  { id: 1, content: "图书馆三楼靠窗的女生，你每天都在看法语书，想认识你 🌸", time: "3分钟前", likes: 234 },
+  { id: 2, content: "食堂打饭的小哥哥，每次都给我多盛一点，谢谢你呀～", time: "15分钟前", likes: 156 },
+  { id: 3, content: "操场跑步的白衣男生，每天晚上都能看到你，加油！", time: "32分钟前", likes: 89 },
+];
 
-// ─── MAIN ────────────────────────────────────────────────────────────────────
+// 扩列数据
+const friendPosts = [
+  { id: 1, name: "小王同学", avatar: "😊", tags: ["大三", "计算机", "爱打篮球"], desc: "想找一起打球的兄弟，周末约起！" },
+  { id: 2, name: "匿名用户", avatar: "🤗", tags: ["大二", "女生", "爱追剧"], desc: "有没有一起追剧的小伙伴呀" },
+  { id: 3, name: "学习小达人", avatar: "😎", tags: ["研一", "图书馆常驻", "爱学习"], desc: "找学习搭子，一起自习打卡" },
+];
 
-export default function CampusAppUI() {
-  const [tab, setTab]           = useState("home");
-  const [school, setSchool]     = useState("");
-  const [liked, setLiked]       = useState({});
+// 学习搭子数据
+const studyPosts = [
+  { id: 1, title: "早起打卡群", desc: "每天早上7点起床打卡，坚持21天", members: 23, avatar: "🌅" },
+  { id: 2, title: "考研互助组", desc: "2025考研党集合，一起刷题", members: 56, avatar: "📖" },
+  { id: 3, title: "英语角", desc: "每周三晚上练口语，欢迎加入", members: 18, avatar: "🗣️" },
+];
+
+export default function CampusApp() {
+  const [page, setPage] = useState("home");
+  const [school, setSchool] = useState("");
   const [suggestions, setSuggestions] = useState(initSuggestions);
-  const [showSuggestForm, setShowSuggestForm] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-  const [newDesc,  setNewDesc]  = useState("");
-  const [newCat,   setNewCat]   = useState("功能建议");
-  const [sortBy,   setSortBy]   = useState("votes");
-  const [filterCat,setFilterCat]= useState("全部");
-  const [banner, setBanner]     = useState(0);
-  const [toast,   setToast]     = useState("");
+  const [newSuggestion, setNewSuggestion] = useState("");
 
-  const banners = [
-    { grad:"from-violet-500 via-pink-400 to-cyan-400", title:"记录校园生活", sub:"分享每一刻的美好", btn:"立即发布" },
-    { grad:"from-orange-400 via-pink-400 to-rose-400", title:"二手节特惠来啦", sub:"好物低价等你捡漏", btn:"去逛逛" },
-    { grad:"from-teal-400 via-cyan-400 to-blue-400",   title:"全国高校互联", sub:"认识来自不同学校的朋友", btn:"去扩列" },
-  ];
-
-  useEffect(() => {
-    const t = setInterval(() => setBanner(b => (b+1) % banners.length), 3200);
-    return () => clearInterval(t);
-  }, []);
-
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2200); };
-
-  const toggleLike = (id) => setLiked(p => ({ ...p, [id]: !p[id] }));
-
-  const voteUp = (id) => {
-    setSuggestions(s => s.map(i => i.id === id
-      ? { ...i, votes: i.userVoted ? i.votes-1 : i.votes+1, userVoted: !i.userVoted }
-      : i
+  // 投票
+  const vote = (id) => {
+    setSuggestions(suggestions.map(s => 
+      s.id === id ? { ...s, votes: s.voted ? s.votes - 1 : s.votes + 1, voted: !s.voted } : s
     ));
-    const s = suggestions.find(i => i.id === id);
-    if (s && !s.userVoted) showToast("👍 投票成功！");
   };
 
-  const addSuggestion = () => {
-    if (!newTitle.trim() || !newDesc.trim()) return showToast("请填写完整信息");
-    setSuggestions(s => [{ id: Date.now(), title: newTitle, desc: newDesc, votes: 1, category: newCat, status: "评估中", userVoted: true }, ...s]);
-    setNewTitle(""); setNewDesc(""); setShowSuggestForm(false);
-    showToast("✅ 建议已提交！");
+  // 提交建议
+  const submitSuggestion = () => {
+    if (!newSuggestion.trim()) return;
+    setSuggestions([
+      { id: Date.now(), title: newSuggestion, votes: 1, voted: true },
+      ...suggestions
+    ]);
+    setNewSuggestion("");
   };
 
-  const filtered = suggestions
-    .filter(i => filterCat === "全部" || i.category === filterCat)
-    .sort((a,b) => sortBy === "votes" ? b.votes - a.votes : a.status.localeCompare(b.status));
-
-  // ─── RENDER ────────────────────────────────────────────────────────────────
-
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Toast */}
-      {toast && <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full text-sm z-50 animate-pulse">{toast}</div>}
-
-      {/* Header */}
-      <header className="bg-white sticky top-0 z-40 shadow-sm">
-        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🎓</span>
-            <span className="font-bold text-lg">校园通</span>
-          </div>
-          <div className="flex items-center gap-3">
-            {/* 自定义学校输入 */}
-            <input
-              type="text"
-              value={school}
-              onChange={(e) => setSchool(e.target.value)}
-              placeholder="输入你的学校"
-              className="text-sm bg-gray-100 px-3 py-1.5 rounded-full w-32 focus:outline-none focus:ring-2 focus:ring-violet-300"
-            />
-            <span className="text-xl">🔔</span>
-          </div>
+  // 首页
+  if (page === "home") {
+    return (
+      <div style={styles.container}>
+        {/* 顶部 */}
+        <div style={styles.header}>
+          <div style={styles.logo}>🎓 校园通</div>
+          <input
+            type="text"
+            placeholder="输入你的学校"
+            value={school}
+            onChange={(e) => setSchool(e.target.value)}
+            style={styles.schoolInput}
+          />
         </div>
-      </header>
 
-      {/* Tab Content */}
-      <main className="max-w-lg mx-auto px-4 pt-4">
-        {tab === "home" && (
-          <>
-            {/* Banner */}
-            <div className={`h-36 rounded-2xl bg-gradient-to-r ${banners[banner].grad} p-5 text-white relative overflow-hidden mb-5`}>
-              <div className="relative z-10">
-                <h2 className="text-xl font-bold">{banners[banner].title}</h2>
-                <p className="text-sm opacity-90 mt-1">{banners[banner].sub}</p>
-                <button className="mt-3 bg-white/20 backdrop-blur px-4 py-1.5 rounded-full text-sm font-medium">{banners[banner].btn}</button>
+        {/* 欢迎语 */}
+        <div style={styles.welcome}>
+          <div style={styles.welcomeTitle}>你好，同学 👋</div>
+          <div style={styles.welcomeSub}>今天想做什么？</div>
+        </div>
+
+        {/* 核心功能 */}
+        <div style={styles.features}>
+          {mainFeatures.map((f) => (
+            <div 
+              key={f.id} 
+              style={{...styles.featureCard, borderLeft: `4px solid ${f.color}`}}
+              onClick={() => setPage(f.id)}
+            >
+              <div style={styles.featureIcon}>{f.icon}</div>
+              <div style={styles.featureInfo}>
+                <div style={styles.featureName}>{f.name}</div>
+                <div style={styles.featureDesc}>{f.desc}</div>
               </div>
-              <div className="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
             </div>
+          ))}
+        </div>
 
-            {/* Menu Grid */}
-            <div className="grid grid-cols-4 gap-3 mb-5">
-              {menus.map((m, i) => (
-                <button key={i} className="flex flex-col items-center gap-1.5 py-3 rounded-xl bg-white shadow-sm hover:shadow-md transition">
-                  <span className={`w-10 h-10 rounded-xl bg-gradient-to-br ${m.color} flex items-center justify-center text-lg`}>{m.icon}</span>
-                  <span className="text-xs text-gray-700">{m.name}</span>
-                </button>
-              ))}
+        {/* 功能建议 */}
+        <div style={styles.suggestSection}>
+          <div style={styles.sectionTitle}>
+            💡 你想要什么功能？
+            <span style={styles.sectionSub}>投票决定新功能</span>
+          </div>
+          {suggestions.slice(0, 3).map((s) => (
+            <div key={s.id} style={styles.suggestItem}>
+              <div style={styles.suggestTitle}>{s.title}</div>
+              <button 
+                style={{
+                  ...styles.voteBtn,
+                  background: s.voted ? "#5B8DEF" : "#f0f0f0",
+                  color: s.voted ? "#fff" : "#666"
+                }}
+                onClick={() => vote(s.id)}
+              >
+                👍 {s.votes}
+              </button>
             </div>
+          ))}
+          <button style={styles.moreBtn} onClick={() => setPage("suggest")}>
+            查看更多 →
+          </button>
+        </div>
 
-            {/* Hot Cards */}
-            <div className="flex gap-3 overflow-x-auto pb-2 mb-5 scrollbar-hide">
-              {hotCards.map((c, i) => (
-                <div key={i} className={`flex-shrink-0 w-48 p-4 rounded-xl ${c.bg}`}>
-                  <h3 className={`font-bold ${c.color}`}>{c.title}</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">{c.subtitle}</p>
-                  <p className="text-sm text-gray-600 mt-2 line-clamp-2">{c.text}</p>
-                  <button className={`mt-3 text-sm font-medium ${c.color}`}>{c.button} →</button>
+        {/* 底部导航 */}
+        <div style={styles.bottomNav}>
+          <div style={{...styles.navItem, color: "#5B8DEF"}}>首页</div>
+          <div style={styles.navItem} onClick={() => setPage("suggest")}>建议</div>
+          <div style={styles.navItem}>我的</div>
+        </div>
+      </div>
+    );
+  }
+
+  // 表白墙
+  if (page === "confess") {
+    return (
+      <div style={styles.container}>
+        <div style={styles.pageHeader}>
+          <button style={styles.backBtn} onClick={() => setPage("home")}>← 返回</button>
+          <div style={styles.pageTitle}>💕 表白墙</div>
+        </div>
+        <div style={styles.postList}>
+          {confessPosts.map((p) => (
+            <div key={p.id} style={styles.postCard}>
+              <div style={styles.postContent}>{p.content}</div>
+              <div style={styles.postFooter}>
+                <span style={styles.postTime}>{p.time}</span>
+                <span>❤️ {p.likes}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button style={styles.publishBtn}>发布表白</button>
+      </div>
+    );
+  }
+
+  // 扩列交友
+  if (page === "friends") {
+    return (
+      <div style={styles.container}>
+        <div style={styles.pageHeader}>
+          <button style={styles.backBtn} onClick={() => setPage("home")}>← 返回</button>
+          <div style={styles.pageTitle}>👋 扩列交友</div>
+        </div>
+        <div style={styles.postList}>
+          {friendPosts.map((p) => (
+            <div key={p.id} style={styles.friendCard}>
+              <div style={styles.friendHeader}>
+                <span style={styles.friendAvatar}>{p.avatar}</span>
+                <span style={styles.friendName}>{p.name}</span>
+              </div>
+              <div style={styles.friendTags}>
+                {p.tags.map((t, i) => (
+                  <span key={i} style={styles.tag}>{t}</span>
+                ))}
+              </div>
+              <div style={styles.friendDesc}>{p.desc}</div>
+              <button style={styles.connectBtn}>+ 添加好友</button>
+            </div>
+          ))}
+        </div>
+        <button style={styles.publishBtn}>发布扩列</button>
+      </div>
+    );
+  }
+
+  // 学习搭子
+  if (page === "study") {
+    return (
+      <div style={styles.container}>
+        <div style={styles.pageHeader}>
+          <button style={styles.backBtn} onClick={() => setPage("home")}>← 返回</button>
+          <div style={styles.pageTitle}>📚 学习搭子</div>
+        </div>
+        <div style={styles.postList}>
+          {studyPosts.map((p) => (
+            <div key={p.id} style={styles.studyCard}>
+              <div style={styles.studyHeader}>
+                <span style={styles.studyAvatar}>{p.avatar}</span>
+                <div style={styles.studyInfo}>
+                  <div style={styles.studyTitle}>{p.title}</div>
+                  <div style={styles.studyMembers}>{p.members}人已加入</div>
                 </div>
-              ))}
+              </div>
+              <div style={styles.studyDesc}>{p.desc}</div>
+              <button style={styles.joinBtn}>加入小组</button>
             </div>
+          ))}
+        </div>
+        <button style={styles.publishBtn}>创建小组</button>
+      </div>
+    );
+  }
 
-            {/* Hot Posts */}
-            <div className="mb-4">
-              <h3 className="font-bold text-gray-800 mb-3">🔥 热门动态</h3>
-              {hotPosts.map(p => (
-                <div key={p.id} className="bg-white rounded-xl p-4 mb-3 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{p.avatar}</span>
-                    <span className="font-medium text-sm">{p.user}</span>
-                    <span className="text-xs text-gray-400">{p.time}</span>
-                    <span className="ml-auto text-xs bg-violet-100 text-violet-600 px-2 py-0.5 rounded-full">{p.tag}</span>
-                  </div>
-                  <p className="text-sm text-gray-700">{p.content}</p>
-                  <div className="flex items-center gap-4 mt-3 text-gray-400 text-sm">
-                    <button onClick={() => toggleLike(p.id)} className={`flex items-center gap-1 ${liked[p.id] ? "text-red-500" : ""}`}>
-                      {liked[p.id] ? "❤️" : "🤍"} {p.likes + (liked[p.id] ? 1 : 0)}
-                    </button>
-                    <span>💬 {p.comments}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+  // 功能建议页
+  if (page === "suggest") {
+    return (
+      <div style={styles.container}>
+        <div style={styles.pageHeader}>
+          <button style={styles.backBtn} onClick={() => setPage("home")}>← 返回</button>
+          <div style={styles.pageTitle}>💡 功能建议</div>
+        </div>
+        
+        {/* 提交建议 */}
+        <div style={styles.submitBox}>
+          <input
+            type="text"
+            placeholder="你想要什么功能？"
+            value={newSuggestion}
+            onChange={(e) => setNewSuggestion(e.target.value)}
+            style={styles.input}
+          />
+          <button style={styles.submitBtn} onClick={submitSuggestion}>提交</button>
+        </div>
 
-        {tab === "suggest" && (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-lg">💡 功能建议</h2>
-              <button onClick={() => setShowSuggestForm(true)} className="bg-violet-500 text-white px-4 py-1.5 rounded-full text-sm">+ 提建议</button>
-            </div>
-
-            {/* Filters */}
-            <div className="flex gap-2 mb-4 overflow-x-auto">
-              {["全部","功能建议","学习","跑腿","技术"].map(c => (
-                <button key={c} onClick={() => setFilterCat(c)} className={`flex-shrink-0 px-3 py-1 rounded-full text-sm ${filterCat === c ? "bg-violet-500 text-white" : "bg-gray-200 text-gray-600"}`}>{c}</button>
-              ))}
-            </div>
-
-            {/* Sort */}
-            <div className="flex gap-2 mb-4">
-              {["votes","status"].map(s => (
-                <button key={s} onClick={() => setSortBy(s)} className={`px-3 py-1 rounded-full text-sm ${sortBy === s ? "bg-gray-800 text-white" : "bg-gray-200 text-gray-600"}`}>
-                  {s === "votes" ? "🔥 最热" : "📋 状态"}
-                </button>
-              ))}
-            </div>
-
-            {/* Suggestion List */}
-            {filtered.map(s => (
-              <div key={s.id} className="bg-white rounded-xl p-4 mb-3 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-800">{s.title}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{s.desc}</p>
-                    <div className="flex gap-2 mt-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${categoryColor[s.category]}`}>{s.category}</span>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor[s.status]}`}>{s.status}</span>
-                    </div>
-                  </div>
-                  <button onClick={() => voteUp(s.id)} className={`flex flex-col items-center px-3 py-1 rounded-lg ${s.userVoted ? "bg-violet-100 text-violet-600" : "bg-gray-100 text-gray-500"}`}>
-                    <span className="text-lg">👍</span>
-                    <span className="text-xs font-bold">{s.votes}</span>
+        {/* 建议列表 */}
+        <div style={styles.suggestList}>
+          {suggestions.sort((a, b) => b.votes - a.votes).map((s, i) => (
+            <div key={s.id} style={styles.suggestCard}>
+              <div style={styles.rank}>#{i + 1}</div>
+              <div style={styles.suggestContent}>
+                <div style={styles.suggestTitle}>{s.title}</div>
+                <div style={styles.suggestVotes}>
+                  <button 
+                    style={{
+                      ...styles.voteBtnLarge,
+                      background: s.voted ? "#5B8DEF" : "#f0f0f0",
+                      color: s.voted ? "#fff" : "#666"
+                    }}
+                    onClick={() => vote(s.id)}
+                  >
+                    👍 {s.votes} 票
                   </button>
                 </div>
               </div>
-            ))}
-          </>
-        )}
-
-        {tab === "profile" && (
-          <div className="text-center py-20">
-            <div className="text-6xl mb-4">👤</div>
-            <h2 className="text-xl font-bold text-gray-800">个人中心</h2>
-            <p className="text-gray-500 mt-2">登录后查看更多功能</p>
-            <button className="mt-6 bg-violet-500 text-white px-8 py-2 rounded-full">登录 / 注册</button>
-          </div>
-        )}
-      </main>
-
-      {/* Suggest Modal */}
-      {showSuggestForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-5 w-full max-w-md">
-            <h3 className="font-bold text-lg mb-4">💡 提交建议</h3>
-            <input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="建议标题" className="w-full border rounded-lg px-3 py-2 mb-3" />
-            <textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="详细描述" className="w-full border rounded-lg px-3 py-2 mb-3 h-24" />
-            <select value={newCat} onChange={e => setNewCat(e.target.value)} className="w-full border rounded-lg px-3 py-2 mb-4">
-              <option>功能建议</option><option>学习</option><option>跑腿</option><option>技术</option>
-            </select>
-            <div className="flex gap-3">
-              <button onClick={() => setShowSuggestForm(false)} className="flex-1 py-2 rounded-lg bg-gray-200">取消</button>
-              <button onClick={addSuggestion} className="flex-1 py-2 rounded-lg bg-violet-500 text-white">提交</button>
             </div>
-          </div>
+          ))}
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around py-2 z-40">
-        {[
-          { id:"home", icon:"🏠", label:"首页" },
-          { id:"suggest", icon:"💡", label:"建议" },
-          { id:"profile", icon:"👤", label:"我的" },
-        ].map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={`flex flex-col items-center gap-0.5 ${tab === t.id ? "text-violet-500" : "text-gray-400"}`}>
-            <span className="text-xl">{t.icon}</span>
-            <span className="text-xs">{t.label}</span>
-          </button>
-        ))}
-      </nav>
-    </div>
-  );
+  return null;
 }
+
+// 样式
+const styles = {
+  container: {
+    maxWidth: "480px",
+    margin: "0 auto",
+    minHeight: "100vh",
+    background: "#f8f9fa",
+    paddingBottom: "80px",
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+  },
+  header: {
+    background: "#fff",
+    padding: "16px 20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "1px solid #eee",
+  },
+  logo: {
+    fontSize: "20px",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  schoolInput: {
+    border: "1px solid #ddd",
+    borderRadius: "20px",
+    padding: "8px 16px",
+    fontSize: "14px",
+    width: "140px",
+    outline: "none",
+  },
+  welcome: {
+    padding: "30px 20px 20px",
+  },
+  welcomeTitle: {
+    fontSize: "24px",
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: "8px",
+  },
+  welcomeSub: {
+    fontSize: "16px",
+    color: "#888",
+  },
+  features: {
+    padding: "0 20px",
+  },
+  featureCard: {
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "20px",
+    marginBottom: "12px",
+    display: "flex",
+    alignItems: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+    cursor: "pointer",
+  },
+  featureIcon: {
+    fontSize: "32px",
+    marginRight: "16px",
+  },
+  featureInfo: {
+    flex: 1,
+  },
+  featureName: {
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: "4px",
+  },
+  featureDesc: {
+    fontSize: "14px",
+    color: "#888",
+  },
+  suggestSection: {
+    padding: "20px",
+    marginTop: "10px",
+  },
+  sectionTitle: {
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: "16px",
+  },
+  sectionSub: {
+    fontSize: "14px",
+    color: "#888",
+    fontWeight: "normal",
+    marginLeft: "8px",
+  },
+  suggestItem: {
+    background: "#fff",
+    borderRadius: "10px",
+    padding: "16px",
+    marginBottom: "10px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+  },
+  suggestTitle: {
+    fontSize: "15px",
+    color: "#333",
+  },
+  voteBtn: {
+    border: "none",
+    borderRadius: "20px",
+    padding: "6px 14px",
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  moreBtn: {
+    width: "100%",
+    padding: "12px",
+    background: "none",
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    color: "#666",
+    fontSize: "14px",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  bottomNav: {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    background: "#fff",
+    display: "flex",
+    justifyContent: "space-around",
+    padding: "16px 0",
+    borderTop: "1px solid #eee",
+    maxWidth: "480px",
+    margin: "0 auto",
+  },
+  navItem: {
+    fontSize: "14px",
+    color: "#888",
+    cursor: "pointer",
+  },
+  // 页面头部
+  pageHeader: {
+    background: "#fff",
+    padding: "16px 20px",
+    display: "flex",
+    alignItems: "center",
+    borderBottom: "1px solid #eee",
+  },
+  backBtn: {
+    background: "none",
+    border: "none",
+    fontSize: "16px",
+    color: "#5B8DEF",
+    cursor: "pointer",
+    padding: 0,
+  },
+  pageTitle: {
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#333",
+    marginLeft: "16px",
+  },
+  postList: {
+    padding: "16px 20px",
+  },
+  postCard: {
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "20px",
+    marginBottom: "12px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+  },
+  postContent: {
+    fontSize: "16px",
+    color: "#333",
+    lineHeight: "1.6",
+    marginBottom: "12px",
+  },
+  postFooter: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: "14px",
+    color: "#888",
+  },
+  postTime: {
+    color: "#aaa",
+  },
+  publishBtn: {
+    position: "fixed",
+    bottom: "100px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "#5B8DEF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "30px",
+    padding: "14px 40px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: "pointer",
+    boxShadow: "0 4px 12px rgba(91,141,239,0.3)",
+  },
+  // 好友卡片
+  friendCard: {
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "20px",
+    marginBottom: "12px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+  },
+  friendHeader: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "12px",
+  },
+  friendAvatar: {
+    fontSize: "32px",
+    marginRight: "12px",
+  },
+  friendName: {
+    fontSize: "16px",
+    fontWeight: "bold",
+    color: "#333",
+  },
+  friendTags: {
+    marginBottom: "12px",
+  },
+  tag: {
+    display: "inline-block",
+    background: "#f0f0f0",
+    borderRadius: "4px",
+    padding: "4px 10px",
+    fontSize: "12px",
+    color: "#666",
+    marginRight: "8px",
+  },
+  friendDesc: {
+    fontSize: "15px",
+    color: "#555",
+    marginBottom: "12px",
+  },
+  connectBtn: {
+    background: "#5B8DEF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "20px",
+    padding: "8px 20px",
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  // 学习卡片
+  studyCard: {
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "20px",
+    marginBottom: "12px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+  },
+  studyHeader: {
+    display: "flex",
+    alignItems: "center",
+    marginBottom: "12px",
+  },
+  studyAvatar: {
+    fontSize: "36px",
+    marginRight: "16px",
+  },
+  studyInfo: {
+    flex: 1,
+  },
+  studyTitle: {
+    fontSize: "17px",
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: "4px",
+  },
+  studyMembers: {
+    fontSize: "13px",
+    color: "#888",
+  },
+  studyDesc: {
+    fontSize: "15px",
+    color: "#555",
+    marginBottom: "12px",
+  },
+  joinBtn: {
+    background: "#4CAF50",
+    color: "#fff",
+    border: "none",
+    borderRadius: "20px",
+    padding: "8px 20px",
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  // 建议页
+  submitBox: {
+    padding: "16px 20px",
+    display: "flex",
+    gap: "10px",
+  },
+  input: {
+    flex: 1,
+    border: "1px solid #ddd",
+    borderRadius: "10px",
+    padding: "12px 16px",
+    fontSize: "15px",
+    outline: "none",
+  },
+  submitBtn: {
+    background: "#5B8DEF",
+    color: "#fff",
+    border: "none",
+    borderRadius: "10px",
+    padding: "12px 24px",
+    fontSize: "15px",
+    cursor: "pointer",
+  },
+  suggestList: {
+    padding: "0 20px",
+  },
+  suggestCard: {
+    background: "#fff",
+    borderRadius: "12px",
+    padding: "16px",
+    marginBottom: "10px",
+    display: "flex",
+    alignItems: "center",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+  },
+  rank: {
+    fontSize: "18px",
+    fontWeight: "bold",
+    color: "#5B8DEF",
+    marginRight: "16px",
+    width: "30px",
+  },
+  suggestContent: {
+    flex: 1,
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  suggestVotes: {
+    display: "flex",
+    alignItems: "center",
+  },
+  voteBtnLarge: {
+    border: "none",
+    borderRadius: "20px",
+    padding: "8px 16px",
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+};
